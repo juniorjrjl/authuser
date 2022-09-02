@@ -1,0 +1,21 @@
+server:
+  port: 8087
+
+spring:
+  datasource:
+    url: jdbc:postgresql://db/ead-authuser
+    username: ead-authuser
+    password: ead-authuser
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      jdbc:
+        lob.non-contextual-creation: true
+    properties:
+      hibernate:
+        show-sql: true
+
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.sql

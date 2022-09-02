@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+    command: bash start-dev.sh
+    ports:
+      - "8087:8087"
+      - "5005:5005"
+    environment:
+      GRADLE_USER_HOME: /box
+      SPRING_PROFILES_ACTIVE: dev
+    volumes:
+      - .:/authuser
+      - box:/box
+    depends_on:
+      - db
+    networks:
+      - ead-microservices-net
+  db:
+    image: postgres:14.5
+    environment:
+      POSTGRES_USER: ead-authuser
+      POSTGRES_PASSWORD: ead-authuser
+      POSTGRES_DB: ead-authuser
+    ports:
+      - "5432:5432"
+    networks:
+      - ead-microservices-net
+  box:
+    image: busybox
+    volumes:
+      - /box
+    networks:
+      - ead-microservices-net
+networks:
+  ead-microservices-net:
+    name: custom-net
+volumes:
+  db:
+  box:
