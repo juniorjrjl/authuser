@@ -38,6 +38,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 
 	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor 'org.hibernate:hibernate-jpamodelgen:5.6.11.Final'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
