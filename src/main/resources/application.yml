@@ -16,6 +16,9 @@ spring:
       hibernate:
         show-sql: true
 
-
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.sql
+
+  output:
+    ansi:
+      enabled: Always

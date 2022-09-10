@@ -45,6 +45,7 @@ public class UserModel extends RepresentationModel<UserModel> implements Seriali
     private String username;
     @Column(nullable = false, unique = true, length = 50)
     private String email;
+    @ToString.Exclude
     @Column(nullable = false)
     @JsonIgnore
     private String password;

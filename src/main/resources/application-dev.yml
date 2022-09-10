@@ -4,3 +4,10 @@ spring:
       secret: 123
     restart:
       trigger-file: trigger.txt
+
+logging:
+  level:
+    com.ead:  TRACE
+    root: INFO
+    org.springframework.web:  DEBUG
+    org.hibernate:  INFO

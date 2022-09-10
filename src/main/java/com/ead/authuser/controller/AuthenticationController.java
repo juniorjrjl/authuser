@@ -5,6 +5,7 @@ import com.ead.authuser.model.UserModel;
 import com.ead.authuser.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -25,6 +26,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @CrossOrigin(originPatterns = "*", maxAge = 3600)
 @RequestMapping("auth")
 @AllArgsConstructor
+@Log4j2
 public class AuthenticationController {
 
     private final UserService userService;
@@ -32,10 +34,13 @@ public class AuthenticationController {
     @PostMapping("signup")
     public ResponseEntity<Object> register(@RequestBody @JsonView(UserDto.UserView.RegistrationPost.class)
                                                @Validated(UserDto.UserView.RegistrationPost.class)  final UserDto request){
+        log.debug("[POST] [register] userDto received {}", request);
         if (userService.existsByUsername(request.getUsername())){
+            log.warn("[POST] [register] Username {} is already taken", request.getUsername());
             return ResponseEntity.status(CONFLICT).body("Error: Username is already taken!");
         }
         if (userService.existsByEmail(request.getUsername())){
+            log.warn("[POST] [register] Email {} is already taken", request.getEmail());
             return ResponseEntity.status(CONFLICT).body("Error: Email is already taken!");
         }
         var userModel = new UserModel();
@@ -45,6 +50,8 @@ public class AuthenticationController {
         userModel.setCreationDate(OffsetDateTime.now());
         userModel.setLastUpdateDate(OffsetDateTime.now());
         userModel = userService.save(userModel);
+        log.debug("[POST] [register] userModel saved {}", userModel);
+        log.info("[POST] [register] user saved successfully userId {}", userModel.getId());
         return ResponseEntity.status(CREATED).body(userModel);
     }
 

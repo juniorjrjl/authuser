@@ -6,6 +6,7 @@ import com.ead.authuser.service.UserService;
 import com.ead.authuser.specification.SpecificationTemplate;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +37,7 @@ import static org.springframework.http.HttpStatus.OK;
 @CrossOrigin(originPatterns = "*", maxAge = 3600)
 @RequestMapping("users")
 @AllArgsConstructor
+@Log4j2
 public class UserController {
 
     private final UserService userService;
@@ -43,29 +45,39 @@ public class UserController {
     @GetMapping
     public ResponseEntity<Page<UserModel>> getAll(final SpecificationTemplate.UserSpec spec,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) final Pageable pageable){
+        log.debug("[GET] [findAll] find users with spec {} and page {}", spec, pageable);
         var userModelPage = userService.findAll(spec, pageable);
         if (CollectionUtils.isNotEmpty(userModelPage.getContent())){
             userModelPage.getContent().forEach(u -> u.add(linkTo(methodOn(UserController.class).getOne(u.getId())).withSelfRel()));
         }
+        log.debug("[GET] [findAll] users founded {}", userModelPage);
+        log.info("[GET] [findAll] Users founded {}", userModelPage);
         return ResponseEntity.status(OK).body(userModelPage);
     }
 
     @GetMapping("{id}")
     public ResponseEntity<Object> getOne(@PathVariable final UUID id){
-        var userModel = userService.findById(id);
-        if (userModel.isEmpty()){
+        log.debug("[GET] [getOne] id received {}", id);
+        var optionalModel = userService.findById(id);
+        if (optionalModel.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found!");
         }
-        return ResponseEntity.status(OK).body(userModel.get());
+        var userModel = optionalModel.get();
+        log.debug("[GET] [getOne] user founded {}", userModel);
+        log.info("[GET] [getOne] User with id {} founded {}", id, userModel);
+        return ResponseEntity.status(OK).body(userModel);
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Object> delete(@PathVariable final UUID id){
+        log.debug("[DELETE] [delete] id received {}", id);
         var userModel = userService.findById(id);
         if (userModel.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found");
         }
         userService.delete(userModel.get());
+        log.debug("[DELETE] [delete] id deleted {}", id);
+        log.info("[DELETE] [delete] User with id {} deleted successfully", id);
         return ResponseEntity.status(NO_CONTENT).build();
     }
 
@@ -73,6 +85,7 @@ public class UserController {
     public ResponseEntity<Object> update(@PathVariable final UUID id,
                                          @RequestBody @JsonView(UserDto.UserView.UserPut.class)
                                          @Validated(UserDto.UserView.UserPut.class)  final UserDto request){
+        log.debug("[PUT] [update] UserDto received {}", request);
         var userModel = userService.findById(id);
         if (userModel.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found");
@@ -82,7 +95,9 @@ public class UserController {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setCpf(request.getCpf());
         user.setLastUpdateDate(OffsetDateTime.now());
-        userService.save(user);
+        user = userService.save(user);
+        log.debug("[PUT] [update] userModel saved {}", user);
+        log.info("[PUT] [update] user updated successfully userId {}", user.getId());
         return ResponseEntity.status(OK).body(user);
     }
 
@@ -90,6 +105,7 @@ public class UserController {
     public ResponseEntity<Object> changePassword(@PathVariable final UUID id,
                                                  @RequestBody @JsonView(UserDto.UserView.PasswordPut.class)
                                                  @Validated(UserDto.UserView.PasswordPut.class) final UserDto request){
+        log.debug("[PUT] [changePassword] UserDto received {}", request);
         var userModel = userService.findById(id);
         if (userModel.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found");
@@ -101,6 +117,8 @@ public class UserController {
         user.setPassword(request.getPassword());
         user.setLastUpdateDate(OffsetDateTime.now());
         userService.save(user);
+        log.debug("[PUT] [changePassword] password changed {}", user);
+        log.info("[PUT] [changePassword] password changed successfully userId {}", user.getId());
         return ResponseEntity.status(OK).body("Password updated successfully");
     }
 
@@ -108,6 +126,7 @@ public class UserController {
     public ResponseEntity<Object> changeImage(@PathVariable final UUID id,
                                               @RequestBody @JsonView(UserDto.UserView.imagePut.class)
                                               @Validated(UserDto.UserView.imagePut.class)  final UserDto request){
+        log.debug("[PUT] [changeImage] UserDto received {}", request);
         var userModel = userService.findById(id);
         if (userModel.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found");
@@ -116,6 +135,8 @@ public class UserController {
         user.setImageUrl(request.getImageUrl());
         user.setLastUpdateDate(OffsetDateTime.now());
         var response = userService.save(user);
+        log.debug("[PUT] [changeImage] image changed {}", user);
+        log.info("[PUT] [changeImage] image changed successfully userId {}", user.getId());
         return ResponseEntity.status(OK).body(response);
     }
 
