@@ -51,7 +51,7 @@ public class AuthenticationController {
         model.setLastUpdateDate(OffsetDateTime.now());
         model = userService.save(model);
         log.debug("[POST] [register] userModel saved {}", model);
-        log.info("[POST] [register] user saved successfully userId {}", model.getId());
+        log.info("[POST] [register] user saved successfully id {}", model.getId());
         return ResponseEntity.status(CREATED).body(model);
     }
 
