@@ -43,16 +43,16 @@ public class AuthenticationController {
             log.warn("[POST] [register] Email {} is already taken", request.getEmail());
             return ResponseEntity.status(CONFLICT).body("Error: Email is already taken!");
         }
-        var userModel = new UserModel();
-        BeanUtils.copyProperties(request, userModel);
-        userModel.setUserStatus(ACTIVE);
-        userModel.setUserType(STUDENT);
-        userModel.setCreationDate(OffsetDateTime.now());
-        userModel.setLastUpdateDate(OffsetDateTime.now());
-        userModel = userService.save(userModel);
-        log.debug("[POST] [register] userModel saved {}", userModel);
-        log.info("[POST] [register] user saved successfully userId {}", userModel.getId());
-        return ResponseEntity.status(CREATED).body(userModel);
+        var model = new UserModel();
+        BeanUtils.copyProperties(request, model);
+        model.setUserStatus(ACTIVE);
+        model.setUserType(STUDENT);
+        model.setCreationDate(OffsetDateTime.now());
+        model.setLastUpdateDate(OffsetDateTime.now());
+        model = userService.save(model);
+        log.debug("[POST] [register] userModel saved {}", model);
+        log.info("[POST] [register] user saved successfully userId {}", model.getId());
+        return ResponseEntity.status(CREATED).body(model);
     }
 
 }
