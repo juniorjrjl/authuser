@@ -7,7 +7,7 @@ import com.ead.authuser.specification.SpecificationTemplate;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -46,13 +46,13 @@ public class UserController {
     public ResponseEntity<Page<UserModel>> getAll(final SpecificationTemplate.UserSpec spec,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) final Pageable pageable){
         log.debug("[GET] [findAll] find users with spec {} and page {}", spec, pageable);
-        var userModelPage = userService.findAll(spec, pageable);
-        if (CollectionUtils.isNotEmpty(userModelPage.getContent())){
-            userModelPage.getContent().forEach(u -> u.add(linkTo(methodOn(UserController.class).getOne(u.getId())).withSelfRel()));
+        var page = userService.findAll(spec, pageable);
+        if (CollectionUtils.isNotEmpty(page.getContent())){
+            page.getContent().forEach(u -> u.add(linkTo(methodOn(UserController.class).getOne(u.getId())).withSelfRel()));
         }
-        log.debug("[GET] [findAll] users founded {}", userModelPage);
-        log.info("[GET] [findAll] Users founded {}", userModelPage);
-        return ResponseEntity.status(OK).body(userModelPage);
+        log.debug("[GET] [findAll] users founded {}", page);
+        log.info("[GET] [findAll] Users founded {}", page);
+        return ResponseEntity.status(OK).body(page);
     }
 
     @GetMapping("{id}")
@@ -62,20 +62,20 @@ public class UserController {
         if (optionalModel.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found!");
         }
-        var userModel = optionalModel.get();
-        log.debug("[GET] [getOne] user founded {}", userModel);
-        log.info("[GET] [getOne] User with id {} founded {}", id, userModel);
-        return ResponseEntity.status(OK).body(userModel);
+        var model = optionalModel.get();
+        log.debug("[GET] [getOne] user founded {}", model);
+        log.info("[GET] [getOne] User with id {} founded {}", id, model);
+        return ResponseEntity.status(OK).body(model);
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Object> delete(@PathVariable final UUID id){
         log.debug("[DELETE] [delete] id received {}", id);
-        var userModel = userService.findById(id);
-        if (userModel.isEmpty()){
+        var model = userService.findById(id);
+        if (model.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found");
         }
-        userService.delete(userModel.get());
+        userService.delete(model.get());
         log.debug("[DELETE] [delete] id deleted {}", id);
         log.info("[DELETE] [delete] User with id {} deleted successfully", id);
         return ResponseEntity.status(NO_CONTENT).build();
@@ -86,11 +86,11 @@ public class UserController {
                                          @RequestBody @JsonView(UserDto.UserView.UserPut.class)
                                          @Validated(UserDto.UserView.UserPut.class)  final UserDto request){
         log.debug("[PUT] [update] UserDto received {}", request);
-        var userModel = userService.findById(id);
-        if (userModel.isEmpty()){
+        var model = userService.findById(id);
+        if (model.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found");
         }
-        var user = userModel.get();
+        var user = model.get();
         user.setFullName(request.getFullName());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setCpf(request.getCpf());
@@ -106,19 +106,19 @@ public class UserController {
                                                  @RequestBody @JsonView(UserDto.UserView.PasswordPut.class)
                                                  @Validated(UserDto.UserView.PasswordPut.class) final UserDto request){
         log.debug("[PUT] [changePassword] UserDto received {}", request);
-        var userModel = userService.findById(id);
-        if (userModel.isEmpty()){
+        var modelOptional = userService.findById(id);
+        if (modelOptional.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found");
         }
-        var user = userModel.get();
-        if (!user.getPassword().equals(request.getOldPassword())){
+        var model = modelOptional.get();
+        if (!model.getPassword().equals(request.getOldPassword())){
             return ResponseEntity.status(CONFLICT).body("Error: Mismatched old password");
         }
-        user.setPassword(request.getPassword());
-        user.setLastUpdateDate(OffsetDateTime.now());
-        userService.save(user);
-        log.debug("[PUT] [changePassword] password changed {}", user);
-        log.info("[PUT] [changePassword] password changed successfully userId {}", user.getId());
+        model.setPassword(request.getPassword());
+        model.setLastUpdateDate(OffsetDateTime.now());
+        userService.save(model);
+        log.debug("[PUT] [changePassword] password changed {}", model);
+        log.info("[PUT] [changePassword] password changed successfully userId {}", model.getId());
         return ResponseEntity.status(OK).body("Password updated successfully");
     }
 
