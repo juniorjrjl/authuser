@@ -1,33 +1,5 @@
---liquibase formatted sql
---changeset junior:202209011411
---comment: user table create
-
-CREATE TABLE TB_USERS(
-    id uuid not null primary key,
-    username varchar(50) unique not null,
-    email varchar(50) unique not null,
-    "password" varchar(255) not null,
-    full_name varchar(50) not null,
-    user_status varchar(20) not null,
-    user_type varchar(20) not null,
-    phone_number varchar(20),
-    cpf varchar(20),
-    image_url varchar(255),
-    creation_date timestamp not null,
-    last_update_date timestamp not null
-);
-
---rollback DROP TABLE TB_USERS;
-
---liquibase formatted sql
---changeset junior:202209211212
---comment: user course relation table create
-
-CREATE TABLE TB_USERS_COURSES(
-                         id uuid not null primary key,
-                         user_id uuid not null,
-                         course_id uuid not null,
-                         CONSTRAINT FK_USERS_COURSES_USERS FOREIGN KEY(user_id) REFERENCES TB_USERS(id)
-);
-
---rollback DROP TABLE TB_USERS_COURSES;
+databaseChangeLog:
+  - include:
+      file: /db/changelog/db.changelog-202209011411.sql
+  - include:
+      file: /db/changelog/db.changelog-202209211212.sql
