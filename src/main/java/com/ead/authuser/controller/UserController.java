@@ -21,11 +21,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
+import static com.ead.authuser.specification.SpecificationTemplate.userCourseId;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -44,9 +47,10 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Page<UserModel>> getAll(final SpecificationTemplate.UserSpec spec,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) final Pageable pageable){
+                                                  @PageableDefault(sort = "id", direction = Sort.Direction.ASC) final Pageable pageable,
+                                                  @RequestParam(required = false) final UUID courseId){
         log.debug("[GET] [findAll] find users with spec {} and page {}", spec, pageable);
-        var page = userService.findAll(spec, pageable);
+        Page<UserModel> page = userService.findAll((Objects.nonNull(courseId)) ? userCourseId(courseId).and(spec) : spec, pageable);
         if (CollectionUtils.isNotEmpty(page.getContent())){
             page.getContent().forEach(u -> u.add(linkTo(methodOn(UserController.class).getOne(u.getId())).withSelfRel()));
         }
