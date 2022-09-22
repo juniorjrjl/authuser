@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  app:
+  appauth:
     build:
       context: .
     command: bash start-dev.sh
@@ -13,12 +13,12 @@ services:
       SPRING_PROFILES_ACTIVE: dev
     volumes:
       - .:/authuser
-      - box:/box
+      - boxauth:/box
     depends_on:
-      - db
+      - dbauth
     networks:
       - ead-microservices-net
-  db:
+  dbauth:
     image: postgres:14.5
     environment:
       POSTGRES_USER: ead-authuser
@@ -28,7 +28,7 @@ services:
       - "5432:5432"
     networks:
       - ead-microservices-net
-  box:
+  boxauth:
     image: busybox
     volumes:
       - /box
@@ -36,7 +36,8 @@ services:
       - ead-microservices-net
 networks:
   ead-microservices-net:
-    name: custom-net
+    name: ead-microservices-net
+    external: true
 volumes:
-  db:
-  box:
+  dbauth:
+  boxauth:
