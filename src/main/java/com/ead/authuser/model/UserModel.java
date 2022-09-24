@@ -79,6 +79,10 @@ public class UserModel extends RepresentationModel<UserModel> implements Seriali
     @OneToMany(mappedBy = "user")
     private Set<UserCourseModel> usersCourses;
 
+    public UserCourseModel toUserCourseModel(final UUID courseId){
+        return new UserCourseModel(null, this, courseId);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
