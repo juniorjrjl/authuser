@@ -1,9 +1,11 @@
 package com.ead.authuser.service.impl;
 
 import com.ead.authuser.model.UserModel;
+import com.ead.authuser.repository.UserCourseRepository;
 import com.ead.authuser.repository.UserRepository;
 import com.ead.authuser.service.UserService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,6 +19,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserCourseRepository userCourseRepository;
 
     @Override
     public Page<UserModel> findAll(final Specification<UserModel> spec, final Pageable pageable) {
@@ -29,8 +32,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(final UserModel userModel) {
-        userRepository.delete(userModel);
+    public void delete(final UserModel model) {
+        var usersCourses = userCourseRepository.findAllUserCourseIntoUser(model.getId());
+        if (CollectionUtils.isNotEmpty(usersCourses)){
+            userCourseRepository.deleteAll(usersCourses);
+        }
+        userRepository.delete(model);
     }
 
     @Override
