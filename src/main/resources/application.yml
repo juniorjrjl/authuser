@@ -22,6 +22,8 @@ spring:
   output:
     ansi:
       enabled: Always
+  application:
+    name: ead-authuser-service
 
 logging:
   level:
@@ -33,4 +35,11 @@ logging:
 ead:
   api:
     url:
-      course: 'http://appcourse:8082'
+      course: 'http://ead-course-service'
+
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://appserviceregistry:8761/eureka'
+  instance:
+    hostname: appauth
