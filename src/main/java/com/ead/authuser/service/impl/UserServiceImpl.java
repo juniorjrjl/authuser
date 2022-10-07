@@ -1,5 +1,6 @@
 package com.ead.authuser.service.impl;
 
+import com.ead.authuser.client.CourseClient;
 import com.ead.authuser.model.UserModel;
 import com.ead.authuser.repository.UserCourseRepository;
 import com.ead.authuser.repository.UserRepository;
@@ -20,6 +21,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserCourseRepository userCourseRepository;
+    private final CourseClient courseClient;
 
     @Override
     public Page<UserModel> findAll(final Specification<UserModel> spec, final Pageable pageable) {
@@ -33,11 +35,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(final UserModel model) {
+        var deleteUserCourseInCourse = false;
         var usersCourses = userCourseRepository.findAllUserCourseIntoUser(model.getId());
         if (CollectionUtils.isNotEmpty(usersCourses)){
+            deleteUserCourseInCourse = true;
             userCourseRepository.deleteAll(usersCourses);
         }
         userRepository.delete(model);
+        if(deleteUserCourseInCourse){
+            courseClient.deleteUserInCourse(model.getId());
+        }
     }
 
     @Override

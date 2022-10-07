@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
 
+import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 
 @Component
@@ -49,4 +50,8 @@ public class CourseClient {
         return result.getBody();
     }
 
+    public void deleteUserInCourse(final UUID userId) {
+        var url = requestUrl + "/courses/users/" + userId;
+        restTemplate.exchange(url, DELETE, null, String.class);
+    }
 }
