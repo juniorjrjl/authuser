@@ -21,14 +21,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
-import static com.ead.authuser.specification.SpecificationTemplate.userCourseId;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -47,10 +44,9 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Page<UserModel>> getAll(final SpecificationTemplate.UserSpec spec,
-                                                  @PageableDefault(sort = "id", direction = Sort.Direction.ASC) final Pageable pageable,
-                                                  @RequestParam(required = false) final UUID courseId){
+                                                  @PageableDefault(sort = "id", direction = Sort.Direction.ASC) final Pageable pageable){
         log.debug("[GET] [findAll] find users with spec {} and page {}", spec, pageable);
-        Page<UserModel> page = userService.findAll((Objects.nonNull(courseId)) ? userCourseId(courseId).and(spec) : spec, pageable);
+        Page<UserModel> page = userService.findAll(spec, pageable);
         if (CollectionUtils.isNotEmpty(page.getContent())){
             page.getContent().forEach(u -> u.add(linkTo(methodOn(UserController.class).getOne(u.getId())).withSelfRel()));
         }
@@ -79,7 +75,7 @@ public class UserController {
         if (model.isEmpty()){
             return ResponseEntity.status(NOT_FOUND).body("User not found");
         }
-        userService.delete(model.get());
+        userService.deleteAndPublish(model.get());
         log.debug("[DELETE] [delete] id deleted {}", id);
         log.info("[DELETE] [delete] User with id {} deleted successfully", id);
         return ResponseEntity.status(NO_CONTENT).build();
@@ -99,7 +95,7 @@ public class UserController {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setCpf(request.getCpf());
         user.setLastUpdateDate(OffsetDateTime.now());
-        user = userService.save(user);
+        user = userService.updateAndPublish(user);
         log.debug("[PUT] [update] userModel saved {}", user);
         log.info("[PUT] [update] user updated successfully userId {}", user.getId());
         return ResponseEntity.status(OK).body(user);
@@ -120,7 +116,7 @@ public class UserController {
         }
         model.setPassword(request.getPassword());
         model.setLastUpdateDate(OffsetDateTime.now());
-        userService.save(model);
+        userService.updatePassword(model);
         log.debug("[PUT] [changePassword] password changed {}", model);
         log.info("[PUT] [changePassword] password changed successfully userId {}", model.getId());
         return ResponseEntity.status(OK).body("Password updated successfully");
@@ -138,7 +134,7 @@ public class UserController {
         var user = userModel.get();
         user.setImageUrl(request.getImageUrl());
         user.setLastUpdateDate(OffsetDateTime.now());
-        var response = userService.save(user);
+        var response = userService.updateAndPublish(user);
         log.debug("[PUT] [changeImage] image changed {}", user);
         log.info("[PUT] [changeImage] image changed successfully userId {}", user.getId());
         return ResponseEntity.status(OK).body(response);

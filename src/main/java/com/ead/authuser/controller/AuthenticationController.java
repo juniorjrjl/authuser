@@ -49,7 +49,7 @@ public class AuthenticationController {
         model.setUserType(STUDENT);
         model.setCreationDate(OffsetDateTime.now());
         model.setLastUpdateDate(OffsetDateTime.now());
-        model = userService.save(model);
+        model = userService.saveAndPublish(model);
         log.debug("[POST] [register] userModel saved {}", model);
         log.info("[POST] [register] user saved successfully id {}", model.getId());
         return ResponseEntity.status(CREATED).body(model);

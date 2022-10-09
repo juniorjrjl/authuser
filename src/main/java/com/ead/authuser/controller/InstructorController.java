@@ -1,7 +1,6 @@
 package com.ead.authuser.controller;
 
 import com.ead.authuser.dto.InstructorDTO;
-import com.ead.authuser.enumeration.UserType;
 import com.ead.authuser.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -38,7 +37,7 @@ public class InstructorController {
         var model = modelOptional.get();
         model.setUserType(INSTRUCTOR);
         model.setLastUpdateDate(OffsetDateTime.now());
-        model = userService.save(model);
+        model = userService.updateAndPublish(model);
         return ResponseEntity.status(OK).body(model);
     }
 

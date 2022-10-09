@@ -15,7 +15,15 @@ public interface UserService {
 
     void delete(final UserModel userModel);
 
+    void deleteAndPublish(final UserModel userModel);
+
     UserModel save(final UserModel userModel);
+
+    UserModel saveAndPublish(UserModel userModel);
+
+    UserModel updateAndPublish(final UserModel userModel);
+
+    UserModel updatePassword(final UserModel userModel);
 
     boolean existsByUsername(final String username);
 

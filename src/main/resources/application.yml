@@ -27,6 +27,9 @@ spring:
   application:
     name: ead-authuser-service
 
+  rabbitmq:
+    addresses: amqps://ejafoygf:enS1512dvovFVFOZ0xEok7F7FjDyeOv1@stingray.rmq.cloudamqp.com/ejafoygf
+
 logging:
   level:
     com.ead:  TRACE
@@ -38,6 +41,9 @@ ead:
   api:
     url:
       course: 'http://ead-course-service/ead-course'
+  broker:
+    exchange:
+      userEvent: ead.userevent
 
 eureka:
   client:

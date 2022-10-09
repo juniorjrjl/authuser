@@ -1,27 +1,29 @@
 package com.ead.authuser.service.impl;
 
-import com.ead.authuser.client.CourseClient;
 import com.ead.authuser.model.UserModel;
-import com.ead.authuser.repository.UserCourseRepository;
+import com.ead.authuser.publisher.UserEventPublisher;
 import com.ead.authuser.repository.UserRepository;
 import com.ead.authuser.service.UserService;
 import lombok.AllArgsConstructor;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.ead.authuser.enumeration.ActionType.CREATE;
+import static com.ead.authuser.enumeration.ActionType.DELETE;
+import static com.ead.authuser.enumeration.ActionType.UPDATE;
 
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserCourseRepository userCourseRepository;
-    private final CourseClient courseClient;
+    private final UserEventPublisher userEventPublisher;
 
     @Override
     public Page<UserModel> findAll(final Specification<UserModel> spec, final Pageable pageable) {
@@ -35,21 +37,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(final UserModel model) {
-        var deleteUserCourseInCourse = false;
-        var usersCourses = userCourseRepository.findAllUserCourseIntoUser(model.getId());
-        if (CollectionUtils.isNotEmpty(usersCourses)){
-            deleteUserCourseInCourse = true;
-            userCourseRepository.deleteAll(usersCourses);
-        }
         userRepository.delete(model);
-        if(deleteUserCourseInCourse){
-            courseClient.deleteUserInCourse(model.getId());
-        }
+    }
+
+    @Transactional
+    @Override
+    public void deleteAndPublish(final UserModel userModel) {
+        delete(userModel);
+        userEventPublisher.publishUserEvent(userModel.toDTO(), DELETE);
     }
 
     @Override
     public UserModel save(final UserModel userModel) {
         return userRepository.save(userModel);
+    }
+
+    @Transactional
+    @Override
+    public UserModel saveAndPublish(final UserModel userModel) {
+        var model = save(userModel);
+        userEventPublisher.publishUserEvent(model.toDTO(), CREATE);
+        return model;
+    }
+
+    @Transactional
+    @Override
+    public UserModel updateAndPublish(final UserModel userModel) {
+        var model = save(userModel);
+        userEventPublisher.publishUserEvent(model.toDTO(), UPDATE);
+        return model;
+    }
+
+    @Override
+    public UserModel updatePassword(final UserModel userModel) {
+        return save(userModel);
     }
 
     @Override

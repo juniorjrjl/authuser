@@ -1,6 +1,5 @@
 package com.ead.authuser.specification;
 
-import com.ead.authuser.model.UserCourseModel_;
 import com.ead.authuser.model.UserModel;
 import com.ead.authuser.model.UserModel_;
 import net.kaczmarzyk.spring.data.jpa.domain.Equal;
@@ -20,13 +19,5 @@ public class SpecificationTemplate {
             @Spec(path = UserModel_.FULL_NAME, spec = Like.class)
     })
     public interface UserSpec extends Specification<UserModel> {}
-
-    public static Specification<UserModel> userCourseId(final UUID courseId){
-        return (root, query, criteriaBuilder) -> {
-            query.distinct(true);
-            var userProd = root.join(UserModel_.usersCourses);
-            return criteriaBuilder.equal(userProd.get(UserCourseModel_.courseId), courseId);
-        };
-    }
 
 }
