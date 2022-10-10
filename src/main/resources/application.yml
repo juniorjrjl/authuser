@@ -51,3 +51,10 @@ eureka:
       defaultZone: 'http://appserviceregistry:8761/eureka'
   instance:
     hostname: appauth
+
+resilience4j:
+  retry:
+    instances:
+      retryInstance:
+        max-attempts: 3
+        wait-duration: 5s
