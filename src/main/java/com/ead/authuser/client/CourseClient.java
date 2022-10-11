@@ -3,6 +3,7 @@ package com.ead.authuser.client;
 import com.ead.authuser.dto.CourseDTO;
 import com.ead.authuser.dto.ResponsePageDTO;
 import com.ead.authuser.service.UtilsService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,8 @@ public class CourseClient {
         this.utilsService = utilsService;
     }
 
-    @Retry(name = "retryInstance", fallbackMethod = "retryFallback")
+    //@Retry(name = "retryInstance", fallbackMethod = "retryFallback")
+    //@CircuitBreaker(name = "circuitbreakerInstance", fallbackMethod = "retryCircuitBreaker")
     public Page<CourseDTO> getAllCoursesByUser(final Pageable pageable, final UUID userId){
         ResponseEntity<ResponsePageDTO<CourseDTO>> result = null;
         var url = requestUrl + utilsService.createUrl(pageable, userId);
@@ -56,6 +58,12 @@ public class CourseClient {
 
     public Page<CourseDTO> retryFallback(final Pageable pageable, final UUID userId, final Throwable throwable ){
         log.error("Inside retry retryFallback cause - {}", throwable.toString(), throwable);
+        List<CourseDTO> searchResult = new ArrayList<>();
+        return new PageImpl<>(searchResult);
+    }
+
+    public Page<CourseDTO> retryCircuitBreaker(final Pageable pageable, final UUID userId, final Throwable throwable ){
+        log.error("Inside circuit breaker fallback cause - {}", throwable.toString(), throwable);
         List<CourseDTO> searchResult = new ArrayList<>();
         return new PageImpl<>(searchResult);
     }
