@@ -1,69 +1,9 @@
-server:
-  port: 8087
-  servlet:
-    context-path: '/ead-authuser'
-
 spring:
-  datasource:
-    url: jdbc:postgresql://dbauth/ead-authuser
-    username: ead-authuser
-    password: ead-authuser
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-      jdbc:
-        lob.non-contextual-creation: true
-    properties:
-      hibernate:
-        show-sql: true
-
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yml
-
-  output:
-    ansi:
-      enabled: Always
   application:
     name: ead-authuser-service
-
-  rabbitmq:
-    addresses: amqps://ejafoygf:enS1512dvovFVFOZ0xEok7F7FjDyeOv1@stingray.rmq.cloudamqp.com/ejafoygf
-
-logging:
-  level:
-    com.ead:  TRACE
-    root: INFO
-    org.springframework.web:  DEBUG
-    org.hibernate:  INFO
-
-ead:
-  api:
-    url:
-      course: 'http://ead-course-service/ead-course'
-  broker:
-    exchange:
-      userEvent: ead.userevent
-
-eureka:
-  client:
-    service-url:
-      defaultZone: 'http://appserviceregistry:8761/eureka'
-  instance:
-    hostname: appauth
-
-resilience4j:
-  circuitbreaker:
-    instances:
-      circuitbreakerInstance:
-        sliding-window-size: 30
-        permitted-number-of-calls-in-half-open-state: 2
-        sliding-window-type: time_based
-        minimum-number-of-calls: 2
-        wait-duration-in-open-state: 30s
-        failure-rate-threshold: 80
-  retry:
-    instances:
-      retryInstance:
-        max-attempts: 3
-        wait-duration: 5s
+  config:
+    import: 'configserver:http://appconfigserver:8888'
+  cloud:
+    config:
+      discovery:
+        service-id: ead-config-server
