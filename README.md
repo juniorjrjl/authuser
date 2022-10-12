@@ -1,7 +1,5 @@
 # Microservice de autenticação desenvolvido no curso Decoder Project
 
-Projeto de receitas
-
 ![technology Java](https://img.shields.io/badge/techonolgy-Java-success)
 ![technology SpringBoot](https://img.shields.io/badge/techonolgy-SpringBoot-success)
 ![technology Spring MVC](https://img.shields.io/badge/techonolgy-SpringMVC-success)
