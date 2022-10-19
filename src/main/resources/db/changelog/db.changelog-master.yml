@@ -5,3 +5,7 @@ databaseChangeLog:
       file: /db/changelog/db.changelog-202209211212.sql
   - include:
       file: /db/changelog/db.changelog-202210071140.sql
+  - include:
+      file: /db/changelog/db.changelog-202210181922.sql
+  - include:
+      file: /db/changelog/db.changelog-202210182006.sql

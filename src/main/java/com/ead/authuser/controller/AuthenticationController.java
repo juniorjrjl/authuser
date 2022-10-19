@@ -2,12 +2,14 @@ package com.ead.authuser.controller;
 
 import com.ead.authuser.dto.UserDto;
 import com.ead.authuser.model.UserModel;
+import com.ead.authuser.service.RoleService;
 import com.ead.authuser.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
 
+import static com.ead.authuser.enumeration.RoleType.ROLE_STUDENT;
 import static com.ead.authuser.enumeration.UserStatus.ACTIVE;
 import static com.ead.authuser.enumeration.UserType.STUDENT;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -30,6 +33,8 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class AuthenticationController {
 
     private final UserService userService;
+    private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("signup")
     public ResponseEntity<Object> register(@RequestBody @JsonView(UserDto.UserView.RegistrationPost.class)
@@ -43,12 +48,16 @@ public class AuthenticationController {
             log.warn("[POST] [register] Email {} is already taken", request.getEmail());
             return ResponseEntity.status(CONFLICT).body("Error: Email is already taken!");
         }
+        var roleModel = roleService.findByRoleName(ROLE_STUDENT)
+                .orElseThrow(() -> new RuntimeException("Error: Role Not Found"));
+        request.setPassword(passwordEncoder.encode(request.getPassword()));
         var model = new UserModel();
         BeanUtils.copyProperties(request, model);
         model.setUserStatus(ACTIVE);
         model.setUserType(STUDENT);
         model.setCreationDate(OffsetDateTime.now());
         model.setLastUpdateDate(OffsetDateTime.now());
+        model.getRoles().add(roleModel);
         model = userService.saveAndPublish(model);
         log.debug("[POST] [register] userModel saved {}", model);
         log.info("[POST] [register] user saved successfully id {}", model.getId());
