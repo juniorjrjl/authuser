@@ -1,14 +1,22 @@
 package com.ead.authuser.controller;
 
+import com.ead.authuser.config.security.JwtProvider;
+import com.ead.authuser.dto.JwtDTO;
+import com.ead.authuser.dto.LoginDTO;
 import com.ead.authuser.dto.UserDto;
 import com.ead.authuser.model.UserModel;
 import com.ead.authuser.service.RoleService;
 import com.ead.authuser.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
+import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.time.OffsetDateTime;
 
 import static com.ead.authuser.enumeration.RoleType.ROLE_STUDENT;
@@ -35,6 +44,8 @@ public class AuthenticationController {
     private final UserService userService;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
+    private final AuthenticationManager authenticationManager;
 
     @PostMapping("signup")
     public ResponseEntity<Object> register(@RequestBody @JsonView(UserDto.UserView.RegistrationPost.class)
@@ -63,5 +74,15 @@ public class AuthenticationController {
         log.info("[POST] [register] user saved successfully id {}", model.getId());
         return ResponseEntity.status(CREATED).body(model);
     }
+
+    @PostMapping("login")
+    public ResponseEntity<JwtDTO> authenticate(@Valid @RequestBody final LoginDTO request){
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        var jwt = jwtProvider.generateJwt(authentication);
+        return ResponseEntity.ok(new JwtDTO(jwt));
+    }
+
 
 }
