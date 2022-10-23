@@ -11,6 +11,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -40,18 +42,17 @@ public class CourseClient {
 
     //@Retry(name = "retryInstance", fallbackMethod = "retryFallback")
     //@CircuitBreaker(name = "circuitbreakerInstance", fallbackMethod = "retryCircuitBreaker")
-    public Page<CourseDTO> getAllCoursesByUser(final Pageable pageable, final UUID userId){
+    public Page<CourseDTO> getAllCoursesByUser(final Pageable pageable, final UUID userId, final String token){
         ResponseEntity<ResponsePageDTO<CourseDTO>> result = null;
         var url = requestUrl + utilsService.createUrl(pageable, userId);
+        var headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        var requestEntity = new HttpEntity<>("parameters", headers);
         log.debug("Request URL : {}", url);
         log.info("Request URL : {}", url);
-        try{
-            var responseType = new ParameterizedTypeReference<ResponsePageDTO<CourseDTO>>() {};
-            result = restTemplate.exchange(url, GET, null, responseType);
-            log.debug("Response number of elements : {}", result.getBody().getSize());
-        }catch (final HttpStatusCodeException ex){
-            log.error("Error request / courses ", ex);
-        }
+        var responseType = new ParameterizedTypeReference<ResponsePageDTO<CourseDTO>>() {};
+        result = restTemplate.exchange(url, GET, requestEntity, responseType);
+        log.debug("Response number of elements : {}", result.getBody().getSize());
         log.info("Ending request / courses userId : {}", userId);
         return result.getBody();
     }

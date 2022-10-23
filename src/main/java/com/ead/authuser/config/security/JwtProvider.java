@@ -9,10 +9,12 @@ import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.stream.Collectors;
 
 import static io.jsonwebtoken.SignatureAlgorithm.HS512;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -31,9 +33,13 @@ public class JwtProvider {
     }
 
     public String generateJwt(final Authentication authentication){
-        UserDetails userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+        final var roles = userPrincipal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
+                .setSubject(userPrincipal.getId().toString())
+                .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(UTF_8)), HS512)
@@ -41,7 +47,7 @@ public class JwtProvider {
 
     }
 
-    public String getUsernameJwt(final String token){
+    public String getSubjectJwt(final String token){
         return Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes(UTF_8))).build().parseClaimsJws(token).getBody().getSubject();
     }
 

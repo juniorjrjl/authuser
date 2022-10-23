@@ -14,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.UUID;
 
 @Log4j2
 @AllArgsConstructor
@@ -27,8 +28,8 @@ public class AuthenticationJwtFilter extends OncePerRequestFilter {
         try{
             var jwtStr = getTokenHeader(request);
             if (jwtProvider.validateJwt(jwtStr)){
-                var username = jwtProvider.getUsernameJwt(jwtStr);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                var id = jwtProvider.getSubjectJwt(jwtStr);
+                UserDetails userDetails = userDetailsService.loadUserById(UUID.fromString(id));
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);

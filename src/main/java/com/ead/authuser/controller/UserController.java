@@ -1,5 +1,7 @@
 package com.ead.authuser.controller;
 
+import com.ead.authuser.config.security.AuthenticationCurrentUserService;
+import com.ead.authuser.config.security.UserDetailsImpl;
 import com.ead.authuser.dto.UserDto;
 import com.ead.authuser.model.UserModel;
 import com.ead.authuser.service.UserService;
@@ -8,11 +10,15 @@ import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -41,10 +48,14 @@ import static org.springframework.http.HttpStatus.OK;
 public class UserController {
 
     private final UserService userService;
+    private final AuthenticationCurrentUserService authenticationCurrentUserService;
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<UserModel>> getAll(final SpecificationTemplate.UserSpec spec,
-                                                  @PageableDefault(sort = "id", direction = Sort.Direction.ASC) final Pageable pageable){
+                                                  @PageableDefault(sort = "id", direction = Sort.Direction.ASC) final Pageable pageable,
+                                                  final Authentication authentication){
+        log.info("[GET] [findAll] find users requested by user {}", ((UserDetailsImpl) authentication.getPrincipal()).getUsername());
         log.debug("[GET] [findAll] find users with spec {} and page {}", spec, pageable);
         Page<UserModel> page = userService.findAll(spec, pageable);
         if (CollectionUtils.isNotEmpty(page.getContent())){
@@ -55,17 +66,23 @@ public class UserController {
         return ResponseEntity.status(OK).body(page);
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT')")
     @GetMapping("{id}")
     public ResponseEntity<Object> getOne(@PathVariable final UUID id){
-        log.debug("[GET] [getOne] id received {}", id);
-        var optionalModel = userService.findById(id);
-        if (optionalModel.isEmpty()){
-            return ResponseEntity.status(NOT_FOUND).body("User not found!");
+        var currentUserId = authenticationCurrentUserService.getCurrentUser().getId();
+        if (currentUserId.equals(id)) {
+            log.debug("[GET] [getOne] id received {}", id);
+            var optionalModel = userService.findById(id);
+            if (optionalModel.isEmpty()) {
+                return ResponseEntity.status(NOT_FOUND).body("User not found!");
+            }
+            var model = optionalModel.get();
+            log.debug("[GET] [getOne] user founded {}", model);
+            log.info("[GET] [getOne] User with id {} founded {}", id, model);
+            return ResponseEntity.status(OK).body(model);
+        } else {
+            throw new AccessDeniedException("Forbidden");
         }
-        var model = optionalModel.get();
-        log.debug("[GET] [getOne] user founded {}", model);
-        log.info("[GET] [getOne] User with id {} founded {}", id, model);
-        return ResponseEntity.status(OK).body(model);
     }
 
     @DeleteMapping("{id}")

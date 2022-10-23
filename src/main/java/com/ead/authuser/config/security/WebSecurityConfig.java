@@ -3,6 +3,8 @@ package com.ead.authuser.config.security;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -13,6 +15,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static com.ead.authuser.enumeration.RoleType.ROLE_ADMIN;
+import static com.ead.authuser.enumeration.RoleType.ROLE_INSTRUCTOR;
+import static com.ead.authuser.enumeration.RoleType.ROLE_STUDENT;
+import static com.ead.authuser.enumeration.RoleType.ROLE_USER;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @AllArgsConstructor
@@ -50,6 +56,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf()
                 .disable();
         http.addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Bean
+    public RoleHierarchy roleHierarchy(){
+        var roleHierarchy = new RoleHierarchyImpl();
+        var hierarchy = "%s > %s \n %s > %s \n %s > %s".formatted(ROLE_ADMIN.toString(), ROLE_INSTRUCTOR.toString(),
+                ROLE_INSTRUCTOR.toString(), ROLE_STUDENT.toString(), ROLE_STUDENT.toString(), ROLE_USER.toString());
+        roleHierarchy.setHierarchy(hierarchy);
+        return roleHierarchy;
     }
 
     @Override
