@@ -1,6 +1,6 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.4'
-	id 'io.spring.dependency-management' version '1.0.14.RELEASE'
+	id 'org.springframework.boot' version '2.7.5'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 	id 'java'
 }
 
@@ -25,6 +25,7 @@ repositories {
 ext {
 	set('springCloudVersion', "2021.0.4")
 	jjwtVersion = '0.11.5'
+	mapstructVersion = '1.5.3.Final'
 }
 
 
@@ -35,33 +36,37 @@ configurations {
 }
 
 dependencies {
+	implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
+	implementation 'net.kaczmarzyk:specification-arg-resolver:2.7.0'
+	implementation 'org.apache.commons:commons-collections4:4.4'
+	implementation 'org.apache.commons:commons-lang3:3.12.0'
+	implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.1'
+	implementation "org.mapstruct:mapstruct:$mapstructVersion"
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.liquibase:liquibase-core'
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
-	implementation 'org.springframework.boot:spring-boot-starter-amqp'
-	implementation 'org.liquibase:liquibase-core'
-	implementation 'org.apache.commons:commons-lang3:3.12.0'
-	implementation 'org.apache.commons:commons-collections4:4.4'
-	implementation 'net.kaczmarzyk:specification-arg-resolver:2.6.3'
-	implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
-	runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
-	runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
-	implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.1'
-
-	runtimeOnly 'org.postgresql:postgresql'
-	runtimeOnly 'org.springframework.boot:spring-boot-devtools'
 
 	compileOnly 'org.projectlombok:lombok'
 
-	annotationProcessor 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
+	runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
+	runtimeOnly 'org.postgresql:postgresql'
+
 	annotationProcessor 'org.hibernate:hibernate-jpamodelgen:5.6.11.Final'
+	annotationProcessor "org.mapstruct:mapstruct-processor:$mapstructVersion"
+	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+	annotationProcessor 'org.projectlombok:lombok'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
