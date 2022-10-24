@@ -27,7 +27,7 @@ a aplicação está configurada para escutar a porta 8087
 
 ## Configurar Spring Devtools para hot reload
 
-A aplicação já esta configurada para aguardar uma conexão remota com o devtools, após inicia-la seguindo os passos [Subir a aplicação](#subir-a-aplicação) siga as seguintes instruções:
+A aplicação já esta configurada para aguardar uma conexão remota com o devtools no profile de dev, após inicia-la seguindo os passos [Subir a aplicação](#subir-a-aplicação) siga as seguintes instruções:
 
  * Inicie o spring devtools em sua máquina real, no Intellij, por exemplo é possível criar uma configuração de run da seguinte forma:
 

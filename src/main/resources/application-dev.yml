@@ -1,4 +1,14 @@
 spring:
+  application:
+    name: ead-authuser-service
+  config:
+    import: 'optional:configserver:http://appconfigserver:8888'
+  cloud:
+    config:
+      discovery:
+        service-id: ead-config-server
+      username: configserver
+      password: ead123cs
   devtools:
     remote:
       secret: 123
