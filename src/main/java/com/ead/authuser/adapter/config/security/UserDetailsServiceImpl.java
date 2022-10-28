@@ -24,7 +24,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     public UserDetails loadUserById(final UUID id) throws UsernameNotFoundException {
         var userModel = userJpaRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + id));
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
         return UserDetailsImpl.build(userModel);
     }
 
