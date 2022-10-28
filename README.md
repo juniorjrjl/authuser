@@ -5,6 +5,7 @@
 ![technology Spring MVC](https://img.shields.io/badge/techonolgy-SpringMVC-success)
 ![technology Gradle](https://img.shields.io/badge/techonolgy-Gradle-success)
 ![technology Microservices](https://img.shields.io/badge/techonolgy-Microservices-red)
+![technology RabbitMQ](https://img.shields.io/badge/techonolgy-RabbitMQ-red)
 ![technology PostgreSQL](https://img.shields.io/badge/techonolgy-PostgreSQL-blue)
 ![technology Docker](https://img.shields.io/badge/techonolgy-Docker-blue)
 
