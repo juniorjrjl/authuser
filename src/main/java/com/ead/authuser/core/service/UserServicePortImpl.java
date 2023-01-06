@@ -51,7 +51,7 @@ public class UserServicePortImpl implements UserServicePort {
     @Override
     public UserDomain saveAndPublish(final UserDomain userDomain) {
         var saved = save(userDomain);
-        userEventPublisherPort.publish(userDomain, CREATE);
+        userEventPublisherPort.publish(saved, CREATE);
         return saved;
     }
 
