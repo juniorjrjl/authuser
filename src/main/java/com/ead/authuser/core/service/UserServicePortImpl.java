@@ -66,8 +66,6 @@ public class UserServicePortImpl implements UserServicePort {
                 .userType(STUDENT)
                 .phoneNumber(insertDomain.phoneNumber())
                 .cpf(insertDomain.cpf())
-                .creationDate(OffsetDateTime.now())
-                .lastUpdateDate(OffsetDateTime.now())
                 .roles(Set.of(roleQueryServicePort.findByRoleName(ROLE_STUDENT)))
                 .build();
         var saved = save(domain);
@@ -82,7 +80,6 @@ public class UserServicePortImpl implements UserServicePort {
                 .fullName(updateDomain.fullName())
                 .phoneNumber(updateDomain.phoneNumber())
                 .cpf(updateDomain.cpf())
-                .lastUpdateDate(OffsetDateTime.now())
                 .build();
         var saved = save(domain);
         userEventPublisherPort.publish(saved, UPDATE);

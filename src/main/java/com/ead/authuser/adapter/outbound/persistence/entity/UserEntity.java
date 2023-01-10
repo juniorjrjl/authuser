@@ -22,6 +22,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
@@ -78,6 +80,17 @@ public class UserEntity extends RepresentationModel<UserEntity> implements Seria
     @Column(nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT_STR_ISO8601)
     private OffsetDateTime lastUpdateDate;
+
+    @PrePersist
+    public void beforeInsert(){
+        this.creationDate = OffsetDateTime.now();
+        this.lastUpdateDate = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    public void beforeUpdate(){
+        this.lastUpdateDate = OffsetDateTime.now();
+    }
 
     @ToString.Exclude
     @JsonProperty(access = WRITE_ONLY)
