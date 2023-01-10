@@ -2,7 +2,10 @@ package com.ead.authuser.adapter.inbound.controller;
 
 import com.ead.authuser.adapter.mapper.RoleMapper;
 import com.ead.authuser.adapter.mapper.UserMapper;
-import com.ead.authuser.core.port.RoleServicePort;
+import com.ead.authuser.adapter.outbound.persistence.entity.UserEntity;
+import com.ead.authuser.core.domain.UserDomain;
+import com.ead.authuser.core.port.RoleQueryServicePort;
+import com.ead.authuser.core.port.UserQueryServicePort;
 import com.ead.authuser.core.port.UserServicePort;
 import com.ead.authuser.adapter.dto.InstructorDTO;
 import com.ead.authuser.core.domain.enumeration.UserType;
@@ -21,6 +24,7 @@ import javax.validation.Valid;
 import java.time.OffsetDateTime;
 
 import static com.ead.authuser.core.domain.enumeration.RoleType.ROLE_INSTRUCTOR;
+import static com.ead.authuser.core.domain.enumeration.UserType.INSTRUCTOR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -32,26 +36,13 @@ import static org.springframework.http.HttpStatus.OK;
 public class InstructorController {
 
     private final UserServicePort userServicePort;
-    private final RoleServicePort roleServicePort;
     private final UserMapper userMapper;
-    private final RoleMapper roleMapper;
 
     @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping("subscription")
-    public ResponseEntity<Object> saveSubscriptionInstructor(@RequestBody @Valid final InstructorDTO request){
-        var modelOptional = userServicePort.findById(request.getId()).map(userMapper::toEntity);
-        if(modelOptional.isEmpty()){
-            return ResponseEntity.status(NOT_FOUND).body("User not found");
-        }
-        var roleModel = roleServicePort.findByRoleName(ROLE_INSTRUCTOR)
-                .map(roleMapper::toEntity)
-                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-        var model = modelOptional.get();
-        model.setUserType(UserType.INSTRUCTOR);
-        model.setLastUpdateDate(OffsetDateTime.now());
-        model.getRoles().add(roleModel);
-        var response = userServicePort.updateAndPublish(userMapper.toDomain(model));
-        return ResponseEntity.status(OK).body(userMapper.toEntity(response));
+    public UserEntity saveSubscriptionInstructor(@RequestBody @Valid final InstructorDTO request){
+        var response = userServicePort.setUserLikeInstructor(request.getId());
+        return userMapper.toEntity(response);
     }
 
 }

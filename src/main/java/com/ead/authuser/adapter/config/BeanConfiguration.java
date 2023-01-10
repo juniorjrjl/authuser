@@ -2,12 +2,15 @@ package com.ead.authuser.adapter.config;
 
 import com.ead.authuser.AuthuserApplication;
 import com.ead.authuser.adapter.outbound.persistence.RolePersistencePortImpl;
+import com.ead.authuser.adapter.service.decorator.UserQueryServicePortImplDecorator;
 import com.ead.authuser.adapter.service.decorator.UserServicePortImplDecorator;
-import com.ead.authuser.core.port.RoleServicePort;
+import com.ead.authuser.core.port.RoleQueryServicePort;
 import com.ead.authuser.core.port.UserEventPublisherPort;
 import com.ead.authuser.core.port.UserPersistencePort;
+import com.ead.authuser.core.port.UserQueryServicePort;
 import com.ead.authuser.core.port.UserServicePort;
-import com.ead.authuser.core.service.RoleServicePortImpl;
+import com.ead.authuser.core.service.RoleQueryServicePortImpl;
+import com.ead.authuser.core.service.UserQueryServicePortImpl;
 import com.ead.authuser.core.service.UserServicePortImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -20,14 +23,23 @@ public class BeanConfiguration {
 
     @Primary
     @Bean
-    public UserServicePort userServicePortImpl(final UserPersistencePort persistence, final UserEventPublisherPort publisher){
-        var userServicePortImpl = new UserServicePortImpl(persistence, publisher);
+    public UserQueryServicePort userQueryServicePortImpl(final UserPersistencePort persistence){
+        var userQueryServicePort = new UserQueryServicePortImpl(persistence);
+        return new UserQueryServicePortImplDecorator(userQueryServicePort);
+    }
+
+    @Primary
+    @Bean
+    public UserServicePort userServicePortImpl(final UserPersistencePort persistence, final UserQueryServicePort userQueryServicePort,
+                                               final UserEventPublisherPort publisher, final RoleQueryServicePort roleQueryServicePort){
+        var userServicePortImpl = new UserServicePortImpl(persistence, userQueryServicePort, publisher, roleQueryServicePort);
         return new UserServicePortImplDecorator(userServicePortImpl);
     }
 
+    @Primary
     @Bean
-    public RoleServicePort roleServicePortImpl(final RolePersistencePortImpl persistence){
-        return new RoleServicePortImpl(persistence);
+    public RoleQueryServicePort roleServicePortImpl(final RolePersistencePortImpl persistence){
+        return new RoleQueryServicePortImpl(persistence);
     }
 
 }

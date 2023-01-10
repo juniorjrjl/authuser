@@ -1,15 +1,13 @@
 package com.ead.authuser.adapter.service.decorator;
 
-import com.ead.authuser.core.domain.PageInfo;
 import com.ead.authuser.core.domain.UserDomain;
-import com.ead.authuser.core.domain.UserFilterDomain;
+import com.ead.authuser.core.domain.UserInsertDomain;
+import com.ead.authuser.core.domain.UserUpdateDomain;
 import com.ead.authuser.core.port.UserServicePort;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -18,16 +16,7 @@ public class UserServicePortImplDecorator implements UserServicePort {
 
     private final UserServicePort userServicePort;
 
-    @Override
-    public List<UserDomain> findAll(final UserFilterDomain domain, final PageInfo pageInfo) {
-        return userServicePort.findAll(domain, pageInfo);
-    }
-
-    @Override
-    public Optional<UserDomain> findById(final UUID id) {
-        return userServicePort.findById(id);
-    }
-
+    @Transactional
     @Override
     public void delete(final UserDomain userDomain) {
         userServicePort.delete(userDomain);
@@ -35,39 +24,43 @@ public class UserServicePortImplDecorator implements UserServicePort {
 
     @Transactional
     @Override
-    public void deleteAndPublish(final UserDomain userDomain) {
-        userServicePort.deleteAndPublish(userDomain);
-    }
-
-    @Override
-    public UserDomain save(final UserDomain userDomain) {
-        return userServicePort.save(userDomain);
+    public void deleteAndPublish(final UUID id) {
+        userServicePort.deleteAndPublish(id);
     }
 
     @Transactional
     @Override
-    public UserDomain saveAndPublish(final UserDomain userDomain) {
-        return userServicePort.saveAndPublish(userDomain);
+    public UserDomain save(final UserDomain domain) {
+        return userServicePort.save(domain);
     }
 
     @Transactional
     @Override
-    public UserDomain updateAndPublish(final UserDomain userDomain) {
-        return userServicePort.updateAndPublish(userDomain);
+    public UserDomain saveAndPublish(final UserInsertDomain insertDomain) {
+        return userServicePort.saveAndPublish(insertDomain);
     }
 
+    @Transactional
     @Override
-    public UserDomain updatePassword(final UserDomain userDomain) {
-        return userServicePort.updatePassword(userDomain);
+    public UserDomain updateAndPublish(final UUID id, final UserUpdateDomain updateDomain) {
+        return userServicePort.updateAndPublish(id, updateDomain);
     }
 
+    @Transactional
     @Override
-    public boolean existsByUsername(final String username) {
-        return userServicePort.existsByUsername(username);
+    public UserDomain updatePassword(final UUID id, final String oldPassword, final String newPassword) {
+        return userServicePort.updatePassword(id, oldPassword, newPassword);
     }
 
+    @Transactional
     @Override
-    public boolean existsByEmail(final String email) {
-        return userServicePort.existsByEmail(email);
+    public UserDomain updateImage(final UUID id, final String imageUrl) {
+        return userServicePort.updateImage(id, imageUrl);
+    }
+
+    @Transactional
+    @Override
+    public UserDomain setUserLikeInstructor(final UUID id) {
+        return userServicePort.setUserLikeInstructor(id);
     }
 }

@@ -2,6 +2,7 @@ package com.ead.authuser.core.domain;
 
 import com.ead.authuser.core.domain.enumeration.UserStatus;
 import com.ead.authuser.core.domain.enumeration.UserType;
+import lombok.Builder;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -21,6 +22,9 @@ public record UserDomain(UUID id,
                          OffsetDateTime creationDate,
                          OffsetDateTime lastUpdateDate,
                          Set<RoleDomain> roles){
+
+    @Builder(toBuilder = true)
+    public UserDomain{}
 
     @Override
     public boolean equals(final Object o) {

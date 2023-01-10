@@ -8,6 +8,7 @@ import com.ead.authuser.adapter.mapper.UserMapper;
 import com.ead.authuser.adapter.outbound.persistence.entity.UserEntity;
 import com.ead.authuser.core.domain.PageInfo;
 import com.ead.authuser.core.domain.UserDomain;
+import com.ead.authuser.core.port.UserQueryServicePort;
 import com.ead.authuser.core.port.UserServicePort;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,17 +32,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -52,8 +52,10 @@ import static org.springframework.http.HttpStatus.OK;
 public class UserController {
 
     private final UserServicePort userServicePort;
+    private final UserQueryServicePort userQueryServicePort;
     private final AuthenticationCurrentUserService authenticationCurrentUserService;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping
@@ -63,7 +65,7 @@ public class UserController {
         log.info("[GET] [findAll] find users requested by user {}", ((UserDetailsImpl) authentication.getPrincipal()).getUsername());
         log.debug("[GET] [findAll] find users with spec {} and page {}", filterParams, pageable);
         var pageInfo = new PageInfo(pageable.getPageNumber(), pageable.getPageSize());
-        List<UserDomain> users = userServicePort.findAll(userMapper.toDomain(filterParams), pageInfo);
+        List<UserDomain> users = userQueryServicePort.findAll(userMapper.toDomain(filterParams), pageInfo);
         var page = new PageImpl<>(users.stream().map(userMapper::toEntity).collect(Collectors.toList()), pageable, users.size());
         if (CollectionUtils.isNotEmpty(page.getContent())){
             page.getContent().forEach(u -> u.add(linkTo(methodOn(UserController.class).getOne(u.getId())).withSelfRel()));
@@ -75,94 +77,60 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('STUDENT')")
     @GetMapping("{id}")
-    public ResponseEntity<Object> getOne(@PathVariable final UUID id){
+    public UserDomain getOne(@PathVariable final UUID id){
         var currentUserId = authenticationCurrentUserService.getCurrentUser().getId();
-        if (currentUserId.equals(id)) {
-            log.debug("[GET] [getOne] id received {}", id);
-            var optionalModel = userServicePort.findById(id).map(userMapper::toEntity);
-            if (optionalModel.isEmpty()) {
-                return ResponseEntity.status(NOT_FOUND).body("User not found!");
-            }
-            var model = optionalModel.get();
-            log.debug("[GET] [getOne] user founded {}", model);
-            log.info("[GET] [getOne] User with id {} founded {}", id, model);
-            return ResponseEntity.status(OK).body(model);
-        } else {
+        if (!currentUserId.equals(id)) {
             throw new AccessDeniedException("Forbidden");
         }
+        log.debug("[GET] [getOne] id received {}", id);
+        var domain = userQueryServicePort.findById(id);
+        var entity = userMapper.toEntity(domain);
+        log.debug("[GET] [getOne] user founded {}", entity);
+        log.info("[GET] [getOne] User with id {} founded {}", id, entity);
+        return domain;
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Object> delete(@PathVariable final UUID id){
+    @ResponseStatus(NO_CONTENT)
+    public void delete(@PathVariable final UUID id){
         log.debug("[DELETE] [delete] id received {}", id);
-        var model = userServicePort.findById(id).map(userMapper::toEntity);
-        if (model.isEmpty()){
-            return ResponseEntity.status(NOT_FOUND).body("User not found");
-        }
-        userServicePort.deleteAndPublish(model.map(userMapper::toDomain).get());
+        userServicePort.deleteAndPublish(id);
         log.debug("[DELETE] [delete] id deleted {}", id);
         log.info("[DELETE] [delete] User with id {} deleted successfully", id);
-        return ResponseEntity.status(NO_CONTENT).build();
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Object> update(@PathVariable final UUID id,
+    public UserEntity update(@PathVariable final UUID id,
                                          @RequestBody @JsonView(UserDto.UserView.UserPut.class)
                                          @Validated(UserDto.UserView.UserPut.class)  final UserDto request){
         log.debug("[PUT] [update] UserDto received {}", request);
-        var model = userServicePort.findById(id).map(userMapper::toEntity);
-        if (model.isEmpty()){
-            return ResponseEntity.status(NOT_FOUND).body("User not found");
-        }
-        var user = model.get();
-        user.setFullName(request.getFullName());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setCpf(request.getCpf());
-        user.setLastUpdateDate(OffsetDateTime.now());
-        var domain = userServicePort.updateAndPublish(userMapper.toDomain(user));
-        user = userMapper.toEntity(domain);
-        log.debug("[PUT] [update] userModel saved {}", user);
-        log.info("[PUT] [update] user updated successfully userId {}", user.getId());
-        return ResponseEntity.status(OK).body(user);
+        var userDomain = userServicePort.updateAndPublish(id, userMapper.toUpdateDomain(request));
+        var response = userMapper.toEntity(userDomain);
+        log.debug("[PUT] [update] userModel saved {}", response);
+        log.info("[PUT] [update] user updated successfully userId {}", response.getId());
+        return response;
     }
 
     @PutMapping("{id}/password")
-    public ResponseEntity<Object> changePassword(@PathVariable final UUID id,
+    @ResponseStatus(NO_CONTENT)
+    public void changePassword(@PathVariable final UUID id,
                                                  @RequestBody @JsonView(UserDto.UserView.PasswordPut.class)
                                                  @Validated(UserDto.UserView.PasswordPut.class) final UserDto request){
         log.debug("[PUT] [changePassword] UserDto received {}", request);
-        var modelOptional = userServicePort.findById(id).map(userMapper::toEntity);
-        if (modelOptional.isEmpty()){
-            return ResponseEntity.status(NOT_FOUND).body("User not found");
-        }
-        var model = modelOptional.get();
-        if (!model.getPassword().equals(request.getOldPassword())){
-            return ResponseEntity.status(CONFLICT).body("Error: Mismatched old password");
-        }
-        model.setPassword(request.getPassword());
-        model.setLastUpdateDate(OffsetDateTime.now());
-        userServicePort.updatePassword(userMapper.toDomain(model));
-        log.debug("[PUT] [changePassword] password changed {}", model);
-        log.info("[PUT] [changePassword] password changed successfully userId {}", model.getId());
-        return ResponseEntity.status(OK).body("Password updated successfully");
+        var response = userServicePort.updatePassword(id, passwordEncoder.encode(request.getOldPassword()), passwordEncoder.encode(request.getPassword()));
+        log.debug("[PUT] [changePassword] password changed {}", response);
+        log.info("[PUT] [changePassword] password changed successfully userId {}", response.id());
     }
 
     @PutMapping("{id}/image")
-    public ResponseEntity<Object> changeImage(@PathVariable final UUID id,
+    public UserDomain changeImage(@PathVariable final UUID id,
                                               @RequestBody @JsonView(UserDto.UserView.imagePut.class)
                                               @Validated(UserDto.UserView.imagePut.class)  final UserDto request){
         log.debug("[PUT] [changeImage] UserDto received {}", request);
-        var userModel = userServicePort.findById(id).map(userMapper::toEntity);
-        if (userModel.isEmpty()){
-            return ResponseEntity.status(NOT_FOUND).body("User not found");
-        }
-        var user = userModel.get();
-        user.setImageUrl(request.getImageUrl());
-        user.setLastUpdateDate(OffsetDateTime.now());
-        var response = userServicePort.updateAndPublish(userMapper.toDomain(user));
-        log.debug("[PUT] [changeImage] image changed {}", user);
-        log.info("[PUT] [changeImage] image changed successfully userId {}", user.getId());
-        return ResponseEntity.status(OK).body(response);
+        var response = userServicePort.updateImage(id, request.getImageUrl());
+        log.debug("[PUT] [changeImage] image changed {}", response);
+        log.info("[PUT] [changeImage] image changed successfully userId {}", response.id());
+        return response;
     }
 
 }
