@@ -51,9 +51,10 @@ public class JwtProvider {
     }
 
     public boolean validateJwt(final String authToken){
+        var isValid = false;
         try {
             Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes(UTF_8))).build().parseClaimsJws(authToken);
-            return true;
+            isValid = true;
         }catch (SignatureException e){
             log.error("Invalid JWT signature: {}", e.getMessage());
         }catch (MalformedJwtException e){
@@ -63,7 +64,7 @@ public class JwtProvider {
         }catch (UnsupportedJwtException e){
             log.error("JWT claims string is empty: {}", e.getMessage());
         }
-        return false;
+        return isValid;
     }
 
 }

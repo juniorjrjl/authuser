@@ -17,7 +17,7 @@ public class UserEventPublishPortImpl implements UserEventPublisherPort {
     private final UserMapper userMapper;
 
     public UserEventPublishPortImpl(final RabbitTemplate rabbitTemplate,
-                                    @Value("${ead.broker.exchange.userEvent}")
+                                    @Value("${ead.broker.exchange.user-event}")
                                     final String exchangeUserEvent,
                                     final UserMapper userMapper) {
         this.rabbitTemplate = rabbitTemplate;

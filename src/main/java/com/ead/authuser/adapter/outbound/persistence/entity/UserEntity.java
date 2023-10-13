@@ -1,30 +1,28 @@
 package com.ead.authuser.adapter.outbound.persistence.entity;
 
-import com.ead.authuser.adapter.dto.UserEventDTO;
 import com.ead.authuser.core.domain.enumeration.UserStatus;
 import com.ead.authuser.core.domain.enumeration.UserType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -35,8 +33,9 @@ import java.util.UUID;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 import static com.fasterxml.jackson.databind.util.StdDateFormat.DATE_FORMAT_STR_ISO8601;
-import static javax.persistence.FetchType.LAZY;
-import static javax.persistence.GenerationType.AUTO;
+import static jakarta.persistence.EnumType.STRING;
+import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.AUTO;
 
 @Getter
 @Setter
@@ -63,10 +62,10 @@ public class UserEntity extends RepresentationModel<UserEntity> implements Seria
     @Column(nullable = false, length = 150)
     private String fullName;
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(STRING)
     private UserStatus userStatus;
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(STRING)
     private UserType userType;
     @Column(length = 20)
     private String phoneNumber;

@@ -3,10 +3,10 @@ package com.ead.authuser.adapter.spec;
 import com.ead.authuser.adapter.dto.UserFilterDTO;
 import com.ead.authuser.adapter.outbound.persistence.entity.UserEntity;
 import com.ead.authuser.adapter.outbound.persistence.entity.UserEntity_;
+import jakarta.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

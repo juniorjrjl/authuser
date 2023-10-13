@@ -1,9 +1,9 @@
 package com.ead.authuser.adapter.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
-import javax.validation.constraints.NotBlank;
 
 public record LoginDTO(@NotBlank
                        @JsonProperty("username")

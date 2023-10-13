@@ -20,9 +20,10 @@ import static com.ead.authuser.core.domain.enumeration.ActionType.CREATE;
 import static com.ead.authuser.core.domain.enumeration.ActionType.DELETE;
 import static com.ead.authuser.core.domain.enumeration.ActionType.UPDATE;
 import static com.ead.authuser.core.domain.enumeration.RoleType.ROLE_INSTRUCTOR;
-import static com.ead.authuser.core.domain.enumeration.RoleType.ROLE_STUDENT;
+import static com.ead.authuser.core.domain.enumeration.RoleType.ROLE_USER;
 import static com.ead.authuser.core.domain.enumeration.UserStatus.ACTIVE;
-import static com.ead.authuser.core.domain.enumeration.UserType.STUDENT;
+import static com.ead.authuser.core.domain.enumeration.UserType.INSTRUCTOR;
+import static com.ead.authuser.core.domain.enumeration.UserType.USER;
 
 @AllArgsConstructor
 public class UserServicePortImpl implements UserServicePort {
@@ -63,10 +64,10 @@ public class UserServicePortImpl implements UserServicePort {
                 .password(insertDomain.password())
                 .fullName(insertDomain.fullName())
                 .userStatus(ACTIVE)
-                .userType(STUDENT)
+                .userType(USER)
                 .phoneNumber(insertDomain.phoneNumber())
                 .cpf(insertDomain.cpf())
-                .roles(Set.of(roleQueryServicePort.findByRoleName(ROLE_STUDENT)))
+                .roles(Set.of(roleQueryServicePort.findByRoleName(ROLE_USER)))
                 .build();
         var saved = save(domain);
         userEventPublisherPort.publish(saved, CREATE);
@@ -111,7 +112,10 @@ public class UserServicePortImpl implements UserServicePort {
         var roleInstructor = roleQueryServicePort.findByRoleName(ROLE_INSTRUCTOR);
         var roles = user.roles();
         roles.add(roleInstructor);
-        user = user.toBuilder().roles(roles).lastUpdateDate(OffsetDateTime.now()).build();
+        user = user.toBuilder()
+                .roles(roles)
+                .userType(INSTRUCTOR)
+                .lastUpdateDate(OffsetDateTime.now()).build();
         var saved = save(user);
         userEventPublisherPort.publish(saved, UPDATE);
         return saved;

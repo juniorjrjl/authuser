@@ -1,13 +1,9 @@
 package com.ead.authuser.core.port;
 
-import com.ead.authuser.core.domain.PageInfo;
 import com.ead.authuser.core.domain.UserDomain;
-import com.ead.authuser.core.domain.UserFilterDomain;
 import com.ead.authuser.core.domain.UserInsertDomain;
 import com.ead.authuser.core.domain.UserUpdateDomain;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface UserServicePort {

@@ -1,6 +1,6 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.5'
-	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'org.springframework.boot' version '3.1.0'
+	id 'io.spring.dependency-management' version '1.1.0'
 	id 'java'
 }
 
@@ -23,14 +23,14 @@ repositories {
 }
 
 ext {
-	set('springCloudVersion', "2021.0.4")
+	set('springCloudVersion', "2022.0.3")
 	jjwtVersion = '0.11.5'
-	mapstructVersion = '1.5.3.Final'
+	mapstructVersion = '1.5.5.Final'
 }
 
 
 configurations {
-	all {
+	configureEach {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}
 }
@@ -40,7 +40,7 @@ dependencies {
 	implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
 	implementation 'org.apache.commons:commons-collections4:4.4'
 	implementation 'org.apache.commons:commons-lang3:3.12.0'
-	implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.1'
+	implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
 	implementation "org.mapstruct:mapstruct:$mapstructVersion"
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
@@ -63,7 +63,7 @@ dependencies {
 	runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
 	runtimeOnly 'org.postgresql:postgresql'
 
-	annotationProcessor 'org.hibernate:hibernate-jpamodelgen:5.6.11.Final'
+	annotationProcessor 'org.hibernate:hibernate-jpamodelgen:6.2.2.Final'
 	annotationProcessor "org.mapstruct:mapstruct-processor:$mapstructVersion"
 	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
 	annotationProcessor 'org.projectlombok:lombok'

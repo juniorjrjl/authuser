@@ -17,7 +17,7 @@ public class RabbitmqConfig {
     private final String exchangeUserEvent;
 
     public RabbitmqConfig(final CachingConnectionFactory cachingConnectionFactory,
-                          @Value("${ead.broker.exchange.userEvent}")
+                          @Value("${ead.broker.exchange.user-event}")
                           final String exchangeUserEvent) {
         this.cachingConnectionFactory = cachingConnectionFactory;
         this.exchangeUserEvent = exchangeUserEvent;

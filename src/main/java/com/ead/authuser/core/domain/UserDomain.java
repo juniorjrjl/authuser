@@ -9,6 +9,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.ead.authuser.core.domain.enumeration.UserType.STUDENT;
+import static com.ead.authuser.core.domain.enumeration.UserType.USER;
+
 public record UserDomain(UUID id,
                          String username,
                          String email,
@@ -25,6 +28,14 @@ public record UserDomain(UUID id,
 
     @Builder(toBuilder = true)
     public UserDomain{}
+
+    public boolean isUser(){
+        return userType.equals(USER);
+    }
+
+    public boolean isStudent(){
+        return userType.equals(STUDENT);
+    }
 
     @Override
     public boolean equals(final Object o) {

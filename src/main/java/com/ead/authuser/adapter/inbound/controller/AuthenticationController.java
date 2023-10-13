@@ -8,6 +8,7 @@ import com.ead.authuser.adapter.mapper.UserMapper;
 import com.ead.authuser.adapter.outbound.persistence.entity.UserEntity;
 import com.ead.authuser.core.port.UserServicePort;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
